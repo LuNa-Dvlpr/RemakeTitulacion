@@ -1,0 +1,102 @@
+﻿@{
+    Layout = "~/Views/Shared/_LayaoutAlumno.cshtml"; 
+}
+
+<h1>Bienvenido</h1>
+@if(!(@ViewBag.Tutoria)){
+<table id="myTable" class="table table-striped table-hover">
+  <thead class="thead-pantone">
+    <tr>
+      <th>Profesor</th>
+      <th>Horas de Tutoria</th>
+    </tr>
+  </thead>
+  <tbody>
+    @foreach (Profesor item in Model) {
+    <tr>
+      <td>@item.Nombre @item.ApellidoPat @item.ApellidoMat</td>
+      <td>@item.HorasTutoria</td>
+    </tr>
+    }
+  </tbody>
+</table>
+<!-- Button trigger modal -->
+<button
+  type="button"
+  class="btn btn-primary mt-4"
+  data-bs-toggle="modal"
+  data-bs-target="#staticBackdrop"
+>
+  Solicitar Tutoria
+</button>
+}
+else
+{
+   <div>
+       Felicidades Tienes una tutoria inscrita
+   </div>
+   <form asp-action="comprobante" asp-controller="Sesiones" method="post">
+       <input type="submit" value="Generar comprobante" />
+   </form>
+}
+
+
+<!-- Modal -->
+<div
+  class="modal fade"
+  id="staticBackdrop"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="staticBackdropLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">
+          Solicitud de Tutoria
+        </h5>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Close"
+        ></button>
+      </div>
+            <form asp-action="InicioAlumno" asp-controller="Sesiones" method="post">
+      <div class="modal-body">
+        <div class="container">          
+            <div class="mb-3">
+              <label for="IdUsuario" class="form-label">Boleta: </label>
+              <input type="text" class="form-control" name="IdUsuario" value="@ViewBag.Boleta" readonly>
+            </div>
+            <div class="mb-3">
+              <label for="Nombre" class="form-label">Nombre: </label>
+              <input type="text" class="form-control" id="Nombre" value="@ViewBag.Nombre" readonly>
+            </div>            
+            <div class="mb-3">
+              <label for="exampleDataList" class="form-label">Datalist example</label>
+                <input class="form-control" list="listaProfesor" name="nomProfe" placeholder="Escribe tu busqueda...">
+                <datalist id="listaProfesor">
+                     @foreach (Profesor item in Model) {                     
+                       <option>@item.Nombre @item.ApellidoPat @item.ApellidoMat</option>                                            
+                     }                  
+                </datalist>
+            </div>               
+        </div>
+        </div>
+        <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-bs-dismiss="modal"
+        >
+          Cerrar
+        </button>
+        <button type="submit" class="btn btn-primary" >Solicitar</button>         
+      </div>
+      </form>
+    </div>
+  </div>
+</div>

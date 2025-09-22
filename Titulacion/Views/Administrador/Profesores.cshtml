@@ -1,0 +1,154 @@
+﻿
+@{
+    ViewData["Title"] = "Profesores";
+    Layout = "~/Views/Shared/_LayaoutAdmin.cshtml";
+}
+
+<h1>Profesores</h1>
+
+
+<table id="myTable" class="table table-striped table-hover">
+    <thead >
+        <tr class="thead-pantone">
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Grupo</th>
+            <th>Tutoria</th>            
+            <th>Editar</th>
+            <th>Eliminar</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @item.IdProfesor
+                </td>
+                <td>
+                    @item.ApellidoPat @item.ApellidoMat @item.Nombre
+                </td>
+                <td>
+                    @item.Correo
+                </td>
+                <td>
+                    @item.HorasTutoria
+                </td>
+                <td>
+                    @item.HorasTotales
+                </td>
+                <td>
+                    <button 
+                    type="button" 
+                    class="btn btn-primary" 
+                    data-bs-toggle="modal" 
+                    data-bs-target="#Editar"
+                    onclick="Modificar(@item.IdProfesor,
+                                      '@item.Nombre',
+                                      '@item.ApellidoPat',
+                                      '@item.ApellidoMat',
+                                      '@item.Correo',
+                                      '@item.HorasTutoria',
+                                      '@item.HorasTotales')"                    
+                    >
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-danger" onclick="ModalEliminar(@item.IdProfesor)">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Modal Editar -->
+<div class="modal fade" id="Editar" tabindex="-1" aria-labelledby="Editar" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="Editarlabel">Editar</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form asp-action="Profesores" asp-controller="Administrador" method="post" id="frmEditar">
+                <div class="form-group">
+                    <label for="idProfesor">Id del Alumno: </label>
+                    <input type="text" id="idProfesorM" name="idProfesor" class="form-control" readonly />
+                </div>
+                <div class="form-group">                
+                    <label for="Nombre">Nombre: </label>
+                    <input type="text" id="txtNombre" name="Nombre" class="form-control "style="text-transform:uppercase;"/>
+                </div>
+                <div class="form-group">
+                    <label for="ApellidoPat">Apellido Paterno: </label>
+                    <input type="text" id="txtApellidoPat" name="ApellidoPat" class="form-control" style="text-transform:uppercase;"/>
+                </div>
+                    <div class="form-group">
+                    <label for="ApellidoMat">Apellido Materno: </label>
+                <input type="text" id="txtApellidoMat" name="ApellidoMat" class="form-control" style="text-transform:uppercase;"/>
+                </div>
+                <div class="form-group">
+                    <label for="Correo">Correo: </label>
+                    <input type="text" id="txtCorreo" name="Correo" class="form-control"/>
+                </div>
+                <div class="form-group">
+                    <label for="HorasTutoria">Horas de Tutoria: </label>
+                    <input type="text" id="txtHorasTutoria" name="HorasTutoria" class="form-control" style="text-transform:uppercase;"/>
+                </div>
+                <div class="form-group">
+                    <label for="HorasTotales">Horas de Totales: </label>
+                    <input type="text" id="txtHorasTotales" name="HorasTotales" class="form-control" style="text-transform:uppercase;"/>
+                </div>
+            </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="Completado()">Guardar Cambios</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<form asp-action="EliminarProfesor" asp-controller="Administrador" method="post" id="frmEliminarProf">
+    <input type="hidden" value="" id="txtidProfesor" name="idProfesor"/>
+</form>
+
+<script>
+    function Modificar(idAlumnoM,Nombre,ApellidoPat,ApellidoMat,Correo,HorasTutoria,HorasTotales){        
+        document.getElementById("idProfesorM").value = idAlumnoM;
+        document.getElementById("txtNombre").value = Nombre;
+        document.getElementById("txtApellidoPat").value = ApellidoPat;
+        document.getElementById("txtApellidoMat").value = ApellidoMat;
+        document.getElementById("txtCorreo").value = Correo;
+        document.getElementById("txtHorasTutoria").value = HorasTutoria;
+        document.getElementById("txtHorasTotales").value = HorasTotales;
+    }
+    function Completado(){
+        document.getElementById("frmEditar").submit();        
+        swal("Good job!", "You clicked the button!", "success");
+    }
+    function ModalEliminar(idProfesor){
+        swal({
+          title: "¿Estas Seguro?",
+          text: "Una vez eliminado se necesitara registrar de nuevo el usuario",
+          icon: "warning",
+          buttons: true,
+          dangerMode: true,
+        })
+        .then((willDelete) => {
+          if (willDelete) {
+              document.getElementById("txtidProfesor").value = idProfesor;
+              document.getElementById("frmEliminarProf").submit();
+            swal("Poof! El registro ha sido elimimado", {
+              icon: "success",
+            });
+          } else {
+            swal("El registro se ha salvado :3");
+          }
+        });
+    }
+</script>
