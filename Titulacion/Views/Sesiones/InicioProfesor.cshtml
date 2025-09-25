@@ -1,35 +1,39 @@
-﻿
+﻿@model List<Titulacion.Models.Alumno>
 @{
-    Layout = "~/Views/Shared/_LayaoutProfesor.cshtml"; 
+    ViewData["Title"] = "Mis Alumnos Tutorados";
+    Layout = "~/Views/Shared/_LayaoutProfesor.cshtml";
 }
 
-<h1>Bienvenido profesor</h1>
-<!--
-    Tabla Alumnos
--->
-<table id="myTable" class="table table-striped table-hover">
+<h1>@ViewData["Title"]</h1>
+<p>Aquí puedes ver la lista de alumnos que te han seleccionado como tutor.</p>
+
+<table class="table table-striped table-hover">
     <thead class="thead-pantone">
         <tr>
-            <th>
-                Nombre:
-            </th>
-            <th>
-                Grupo:
-            </th>
+            <th>Boleta</th>
+            <th>Nombre Completo del Alumno</th>
+            <th>Correo</th>
+            <th>Grupo</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)    
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var alumno in Model)
+            {
+                <tr>
+                    <td>@(alumno.IdUsuarioNavigation?.User ?? "N/A")</td>
+                    <td>@($"{alumno.Nombre} {alumno.ApellidoPat} {alumno.ApellidoMat}")</td>
+                    <td>@alumno.Correo</td>
+                    <td>@alumno.Grupo</td>
+                </tr>
+            }
+        }
+        else
         {
             <tr>
-                <td>
-                    @item.Nombre @item.ApellidoPat @item.ApellidoMat
-                </td>
-                <td>
-                    @item.Grupo
-                </td>
+                <td colspan="4" class="text-center">Aún no tienes alumnos inscritos.</td>
             </tr>
         }
     </tbody>
 </table>
-

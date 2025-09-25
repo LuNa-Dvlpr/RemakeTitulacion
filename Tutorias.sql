@@ -73,6 +73,61 @@ FROM Usuarios as U
 INNER JOIN Alumno as A
 ON U.Id_Usuario = A.Id_Usuario;
 
+
+--Borrar registros pruebas
+DELETE FROM Alumno WHERE Id_Usuario = (SELECT Id_Usuario FROM Usuarios WHERE [User] = '2023600072');
+
+DELETE FROM Inscripcion WHERE Id_Alumno = 2;
+
+DELETE FROM Alumno WHERE Id_Alumno = 2;
+
+
+-- mas registros
+
+-- Primero, creamos los registros en la tabla Usuarios para los profesores
+-- El TIPO 1 corresponde a Profesor
+INSERT INTO Usuarios ([User], Pass, TIPO, Visibilidad) 
+VALUES ('profe1', 'TEXTO_CIFRADO_AQUI', 1, 1),
+       ('profe2', 'TEXTO_CIFRADO_AQUI_2', 1, 1);
+GO
+
+-- Ahora, creamos los registros en la tabla Profesor, usando los Id_Usuario que se acaban de generar
+-- Asumimos que los Id_Usuario generados son 3 y 4 (ajusta si es necesario)
+INSERT INTO Profesor (Id_Usuario, Nombre, Apellido_Pat, Apellido_Mat, Correo, Grupo, HorasTotales, HorasTutoria)
+VALUES (3, 'Carlos', 'Brisenio', 'Saquedo', 'carlos@email.com', '6IV11', 20, 10),
+       (4, 'Adrian', 'Villalba', 'Lemus', 'adrian@email.com', '6IV11', 20, 7);
+GO
+
+
+-- 1. Borra todas las inscripciones (la más dependiente)
+DELETE FROM Inscripcion;
+
+-- 2. Borra todos los alumnos
+DELETE FROM Alumno;
+
+-- 3. Borra todos los profesores
+DELETE FROM Profesor;
+
+-- 4. Ahora sí, borra todos los usuarios
+DELETE FROM Usuarios;
+
+
+-- Opcional: Reinicia el contador de ID para que empiece en 1 de nuevo
+DBCC CHECKIDENT ('[Usuarios]', RESEED, 0);
+GO
+
+-- Insertamos los usuarios para los profesores
+INSERT INTO Usuarios ([User], Pass, TIPO, Visibilidad) 
+VALUES ('profe1', 'TEXTO_CIFRADO_AQUI', 1, 1),
+       ('profe2', 'TEXTO_CIFRADO_AQUI_2', 1, 1);
+GO
+
+-- Insertamos los detalles de los profesores (ahora usarán Id_Usuario 1 y 2)
+INSERT INTO Profesor (Id_Usuario, Nombre, Apellido_Pat, Apellido_Mat, Correo, Grupo, HorasTotales, HorasTutoria)
+VALUES (1, 'Carlos', 'Brisenio', 'Saquedo', 'carlos@email.com', '6IV11', 20, 10),
+       (2, 'Adrian', 'Villalba', 'Lemus', 'adrian@email.com', '6IV11', 20, 7);
+GO
+
 --SELECT al.Nombre, al.Apellido_Mat, al.Apellido_Mat
 --FROM Inscripcion AS i
 --INNER JOIN Alumno AS al

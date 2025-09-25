@@ -15,15 +15,15 @@ namespace Titulacion.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        private readonly TutoriasContext _context;
+        public HomeController(TutoriasContext context)
         {
-            _logger = logger;
+            _context = context;
         }
         [HttpGet]
         public IActionResult Login()
-        {
+        {   //cifrar contraseñas de forma temporal, quitar comentario linea de abajo
+           // string contraseñaCifrada = Titulacion.Clases.General.cifrarDatos("profe123");
             ViewBag.Bool = false;
             return View();
         }
@@ -32,7 +32,7 @@ namespace Titulacion.Controllers
         {
             UsuarioCLS user = new UsuarioCLS();
 
-            switch (user.Validar(userReci))
+            switch (user.Validar(userReci, _context))
             {
                 case 0:
                     var claimsAdmin = new List<Claim>
@@ -81,18 +81,55 @@ namespace Titulacion.Controllers
             }
         }
 
+        // Este método muestra el formulario de registro (GET)
         [HttpGet]
-        public IActionResult Register() {
-            ViewBag.Bool = false;
-            return View();
-        }
-        [HttpPost]
-        public IActionResult Register(string IdUsuario, string Correo)
+        public IActionResult Registro()
         {
-            UsuarioCLS user = new UsuarioCLS();
-            ViewBag.Bool = true;
-            ViewBag.TodoFine = user.registro(IdUsuario, Correo);
-            return View();
+            // Simplemente creamos un modelo vacío y lo pasamos a la vista
+            var modelo = new RegistroAlumnoViewModel();
+            return View(modelo);
+        }
+
+        // Este método procesará los datos del formulario (POST)
+        [HttpPost]
+        public async Task<IActionResult> Registro(RegistroAlumnoViewModel modelo)
+        {
+            if (ModelState.IsValid)
+            {
+                // 1. Creamos el nuevo objeto "Usuarios"
+                var nuevoUsuario = new Usuarios
+                {
+                    User = modelo.Boleta,
+                    Pass = General.cifrarDatos(modelo.Pass), // OJO: En un proyecto real, esto debe encriptarse.
+                    Tipo = 2, // Tipo 2 para Alumno, según tu lógica de login
+                    Visibilidad = true
+                };
+                _context.Usuarios.Add(nuevoUsuario);
+                // Guardamos para que la base de datos le asigne un IdUsuario
+                await _context.SaveChangesAsync();
+
+                // 2. Creamos el nuevo objeto "Alumno"
+                var nuevoAlumno = new Alumno
+                {
+                    IdUsuario = nuevoUsuario.IdUsuario, // Usamos el ID del usuario que acabamos de crear
+                    Nombre = modelo.Nombre,
+                    ApellidoPat = modelo.ApellidoPat,
+                    ApellidoMat = modelo.ApellidoMat,
+                    Correo = modelo.Correo,
+                    Grupo = modelo.Grupo,
+                    Tutoria = false // Un nuevo alumno siempre empieza sin tutoría
+                };
+                _context.Alumno.Add(nuevoAlumno);
+                await _context.SaveChangesAsync(); // Guardamos el alumno en la base de datos
+
+
+                // Enviamos un mensaje de éxito a la pantalla de Login
+                TempData["RegistroExitoso"] = "¡Tu cuenta ha sido creada! Ahora puedes iniciar sesión.";
+                return RedirectToAction("Login", "Home");
+            }
+
+            // Si los datos no son válidos, se vuelve a mostrar el formulario con los errores.
+            return View(modelo);
         }
 
         public async Task<IActionResult> Logout() {

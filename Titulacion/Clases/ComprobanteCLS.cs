@@ -1,5 +1,11 @@
-﻿using iTextSharp.text;
-using iTextSharp.text.pdf;
+﻿using iText.IO.Font.Constants;
+using iText.IO.Image;
+using iText.Kernel.Font;
+using iText.Kernel.Pdf;
+using iText.Layout;
+using iText.Layout.Borders;
+using iText.Layout.Element;
+using iText.Layout.Properties;
 using System;
 using System.IO;
 using System.Linq;
@@ -9,92 +15,85 @@ namespace Titulacion.Clases
 {
     public class ComprobanteCLS
     {
-        General generic = new General();
-        public FileStream GenerarComprobante()
+        public FileStream GenerarComprobante(TutoriasContext db, string boletaUsuario, string wwwRootPath)
         {
-            TutoriasContext db = new TutoriasContext();
+            try
+            {
+                var us = db.Usuarios.FirstOrDefault(x => x.User == boletaUsuario);
+                var alm = db.Alumno.FirstOrDefault(x => x.IdUsuario == us.IdUsuario);
+                var inscrip = db.Inscripcion.FirstOrDefault(x => x.IdAlumno == alm.IdAlumno);
+                var prof = db.Profesor.FirstOrDefault(x => x.IdProfesor == inscrip.IdProfesor);
 
-            var us = db.Usuarios.Where(x => x.User == generic.Boleta).First();
+                if (us == null || alm == null || inscrip == null || prof == null)
+                {
+                    throw new Exception("No se encontraron todos los datos necesarios para generar el comprobante.");
+                }
 
-            var alm = db.Alumno.Where(x => x.IdUsuario == us.IdUsuario).First();
+                string nombreArchivo = $"Comprobante_{boletaUsuario}.pdf"; // Cambiado para que el nombre sea más claro y consistente
 
-            var inscrip = db.Inscripcion.Where(x => x.IdAlumno == alm.IdAlumno).First();
+                FileStream stream = new FileStream(nombreArchivo, FileMode.Create, FileAccess.Write);
+                var writer = new PdfWriter(stream);
+                var pdf = new PdfDocument(writer);
+                var document = new Document(pdf, iText.Kernel.Geom.PageSize.A5.Rotate());
+                document.SetMargins(30, 25, 25, 25);
 
-            var prof = db.Profesor.Where(x => x.IdProfesor == inscrip.IdProfesor).First();
+                PdfFont fontNormal = PdfFontFactory.CreateFont(StandardFonts.HELVETICA);
+                PdfFont fontBold = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
 
-            bool comprobar = File.Exists(generic.Boleta + ".pdf");
+                // Leemos las imágenes desde la ruta local
+                string rutaLogoIpn = Path.Combine(wwwRootPath, "img", "IPN.png");
+                string rutaLogoCecyt = Path.Combine(wwwRootPath, "img", "Cecyt13.jpg");
 
-            if (comprobar) {
-                File.Delete(generic.Boleta + ".pdf");
+                ImageData logoIpnData = ImageDataFactory.Create(rutaLogoIpn);
+                Image logo1 = new Image(logoIpnData).ScaleToFit(50, 50).SetFixedPosition(1, 23, 300);
+                document.Add(logo1);
+
+                ImageData logoCecytData = ImageDataFactory.Create(rutaLogoCecyt);
+                Image logo2 = new Image(logoCecytData).ScaleToFit(70, 70).SetFixedPosition(1, 490, 300);
+                document.Add(logo2);
+
+                // --- SECCIÓN CLAVE: Asegurándonos de que todo el texto esté aquí ---
+                // Encabezados
+                document.Add(new Paragraph("Instituto Politécnico Nacional").SetFont(fontBold).SetTextAlignment(TextAlignment.CENTER));
+                document.Add(new Paragraph("Centro de Estudios Científicos y Tecnológicos No.13").SetFont(fontBold).SetTextAlignment(TextAlignment.CENTER));
+                document.Add(new Paragraph("Ricardo Flores Magón").SetFont(fontBold).SetTextAlignment(TextAlignment.CENTER));
+                document.Add(new Paragraph("\n\n")); // Espacios en blanco
+                document.Add(new Paragraph("Comprobante de inscripción a tutorías individuales").SetFont(fontBold).SetTextAlignment(TextAlignment.CENTER));
+                document.Add(new Paragraph("\n\n")); // Espacios en blanco
+
+                document.Add(new Paragraph("Folio: " + inscrip.Folio).SetFont(fontBold).SetTextAlignment(TextAlignment.LEFT));
+                document.Add(new Paragraph("\n")); // Espacio en blanco
+
+                // Tablas con información
+                Table tabl1 = new Table(UnitValue.CreatePercentArray(2)).UseAllAvailableWidth();
+                tabl1.AddCell(new Cell().Add(new Paragraph($"Alumno: {alm.ApellidoPat} {alm.ApellidoMat} {alm.Nombre}").SetFont(fontNormal)).SetBorder(Border.NO_BORDER));
+                tabl1.AddCell(new Cell().Add(new Paragraph("Boleta:" + boletaUsuario).SetFont(fontNormal)).SetBorder(Border.NO_BORDER));
+                document.Add(tabl1);
+
+                Table tabl2 = new Table(UnitValue.CreatePercentArray(2)).UseAllAvailableWidth();
+                tabl2.AddCell(new Cell().Add(new Paragraph($"Profesor: {prof.ApellidoPat} {prof.ApellidoMat} {prof.Nombre}").SetFont(fontNormal)).SetBorder(Border.NO_BORDER));
+                tabl2.AddCell(new Cell().Add(new Paragraph("Grupo:" + alm.Grupo).SetFont(fontNormal)).SetBorder(Border.NO_BORDER));
+                document.Add(tabl2);
+
+                document.Add(new Paragraph("\n")); // Espacio en blanco
+                document.Add(new Paragraph($"Comprobante generado el {DateTime.Now:dd/MM/yyyy} a las {DateTime.Now:HH:mm:ss} hrs.").SetFont(fontBold));
+
+                document.Close();
+
+                return new FileStream(nombreArchivo, FileMode.Open, FileAccess.Read);
             }
-
-            //Creamos un nuevo documento y lo definimos como PDF
-            FileStream stream = new FileStream(generic.Boleta + ".pdf", FileMode.Create);
-            Document pdfDoc = new Document(PageSize.A5.Rotate(), 25, 25, 30, 30);            
-            PdfWriter writer = PdfWriter.GetInstance(pdfDoc, stream);
-
-            Font letra = new Font(Font.FontFamily.COURIER, 12, Font.NORMAL, BaseColor.BLACK);
-            Font letra2 = new Font(Font.FontFamily.COURIER, 12, Font.BOLD, BaseColor.BLACK);
-            pdfDoc.Open();
-
-
-            //Agregamos la imagen del banner al documento
-            iTextSharp.text.Image logo1 = iTextSharp.text.Image.GetInstance("https://multipress.com.mx/wp-content/uploads/2020/04/ipn.jpg");
-            logo1.ScalePercent(11);
-
-            logo1.SetAbsolutePosition(23, 300);
-            pdfDoc.Add(logo1);
-            iTextSharp.text.Image logo2 = iTextSharp.text.Image.GetInstance("https://www.cecyt13.ipn.mx/assets/files/cecyt13/img/Inicio/banderin.png");
-            logo2.ScalePercent(25);
-
-            logo2.SetAbsolutePosition(490, 300);
-            pdfDoc.Add(logo2);
-
-
-            pdfDoc.Add(new Paragraph("Instituto Politécnico Nacional", letra2) { Alignment = Element.ALIGN_CENTER });
-            pdfDoc.Add(new Paragraph("Centro de Estudios Científicos y Tecnológicos No.13", letra2) { Alignment = Element.ALIGN_CENTER });
-            pdfDoc.Add(new Paragraph("Ricardo Flores Magón", letra2) { Alignment = Element.ALIGN_CENTER });
-            pdfDoc.Add(Chunk.NEWLINE);
-            pdfDoc.Add(Chunk.NEWLINE);
-            pdfDoc.Add(new Paragraph("Comprobante de inscripción a tutorías individuales", letra2) { Alignment = Element.ALIGN_CENTER });
-            pdfDoc.Add(Chunk.NEWLINE);
-            pdfDoc.Add(Chunk.NEWLINE);
-            pdfDoc.Add(new Paragraph("Folio: " + inscrip.Folio, letra2) { Alignment = Element.ALIGN_LEFT });
-            pdfDoc.Add(Chunk.NEWLINE);
-            PdfPTable tabl1 = new PdfPTable(2);
-            tabl1.WidthPercentage = 100;
-            PdfPCell fila1 = new PdfPCell(new Phrase("Alumno: " + alm.ApellidoPat + " " + alm.ApellidoMat + " " + alm.Nombre, letra));
-            fila1.BorderWidth = 0;
-            tabl1.AddCell(fila1);
-            PdfPCell fila2 = new PdfPCell(new Phrase("Boleta:" + generic.Boleta, letra));
-            fila2.BorderWidth = 0;
-            tabl1.AddCell(fila2);
-            pdfDoc.Add(tabl1);
-
-            PdfPTable tabl2 = new PdfPTable(2);
-            tabl2.WidthPercentage = 100;
-            PdfPCell fila11 = new PdfPCell(new Phrase("Profesor: " + prof.ApellidoPat + " " + prof.ApellidoMat + " " + prof.Nombre, letra));
-            fila11.BorderWidth = 0;
-            PdfPCell fila22 = new PdfPCell(new Phrase("Grupo:" + alm.Grupo, letra));
-            fila22.BorderWidth = 0;
-            tabl2.AddCell(fila11);
-            tabl2.AddCell(fila22);
-            pdfDoc.Add(tabl2);
-            pdfDoc.Add(Chunk.NEWLINE);
-            pdfDoc.Add(Chunk.NEWLINE);
-            pdfDoc.Add(Chunk.NEWLINE);
-            pdfDoc.Add(Chunk.NEWLINE);
-
-
-            pdfDoc.Add(new Paragraph(string.Format("Comprobante generado el {0:dd/MM/yyyy} a las {0:HH:mm:ss} hrs. ", DateTime.Now), letra2) { Alignment = Element.ALIGN_BOTTOM });
-
-            pdfDoc.Close();
-            writer.Close();
-            stream.Close();
-
-            FileStream abrir = new FileStream(generic.Boleta + ".pdf", FileMode.Open);
-
-            return abrir;
+            catch (Exception ex)
+            {
+                // Este bloque se encarga de generar un PDF de error si algo falla
+                string errorArchivo = "error.pdf";
+                var writer = new PdfWriter(errorArchivo);
+                var pdf = new PdfDocument(writer);
+                var document = new Document(pdf);
+                document.Add(new Paragraph("Ocurrió un error al generar el comprobante."));
+                document.Add(new Paragraph("Detalle: " + ex.Message)); // Muestra el mensaje de la excepción para depuración
+                document.Close();
+                return new FileStream(errorArchivo, FileMode.Open, FileAccess.Read);
+            }
         }
     }
 }
