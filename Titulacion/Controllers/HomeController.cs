@@ -23,7 +23,9 @@ namespace Titulacion.Controllers
         [HttpGet]
         public IActionResult Login()
         {   //cifrar contraseñas de forma temporal, quitar comentario linea de abajo
-           // string contraseñaCifrada = Titulacion.Clases.General.cifrarDatos("profe123");
+            string contraseñaCifradaProfe = Titulacion.Clases.General.cifrarDatos("profe123");
+            //crifrar contraseña de admi
+            string contraseñaCifradaAdmin = Titulacion.Clases.General.cifrarDatos("admin123");
             ViewBag.Bool = false;
             return View();
         }
