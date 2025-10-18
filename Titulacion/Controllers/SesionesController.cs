@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -58,6 +59,59 @@ namespace Titulacion.Controllers
             ViewBag.Boleta = IdUsuario;
 
             return View(listaProfesor);
+        }
+
+        [HttpPost]
+        public JsonResult SolicitarTutoria([FromBody] SolicitudTutoriaViewModel data)
+        {
+            try
+            {
+                // Buscamos al alumno por su boleta
+                var alumno = _context.Alumno
+                                     .Include(a => a.IdUsuarioNavigation) // Incluimos la tabla Usuarios para la consulta
+                                     .FirstOrDefault(a => a.IdUsuarioNavigation.User == data.Boleta);
+                if (alumno == null)
+                {
+                    return Json(new { success = false, message = "Alumno no encontrado." });
+                }
+
+                // Buscamos al profesor por su nombre completo
+                var profesor = _context.Profesor.FirstOrDefault(p => (p.Nombre + " " + p.ApellidoPat + " " + p.ApellidoMat) == data.Profesor);
+                if (profesor == null)
+                {
+                    return Json(new { success = false, message = "Profesor no encontrado." });
+                }
+
+                // Verificamos si ya existe una inscripción
+                var yaInscrito = _context.Inscripcion.Any(i => i.IdAlumno == alumno.IdAlumno);
+                if (yaInscrito)
+                {
+                    return Json(new { success = false, message = "Este alumno ya tiene una tutoría inscrita." });
+                }
+
+                // Creamos la nueva inscripción
+                var nuevaInscripcion = new Inscripcion
+                {
+                    IdAlumno = alumno.IdAlumno,
+                    IdProfesor = profesor.IdProfesor,
+                    Fecha = DateTime.Now.Date,
+                    Folio = Titulacion.Clases.General.Folio(alumno) // Usamos tu método para generar el folio
+                };
+
+                _context.Inscripcion.Add(nuevaInscripcion);
+
+                // Actualizamos al alumno para marcar que ya tiene tutoría
+                alumno.Tutoria = true;
+
+                _context.SaveChanges();
+
+                return Json(new { success = true, message = "¡Tutoría inscrita con éxito!" });
+            }
+            catch (Exception ex)
+            {
+                // Devolvemos el mensaje de error real para facilitar la depuración
+                return Json(new { success = false, message = "Ocurrió un error en el servidor: " + ex.Message });
+            }
         }
 
         [Authorize(Roles = "Alumno")]
