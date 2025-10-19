@@ -1,7 +1,6 @@
-﻿using System.Text;
+﻿using System;
 using System.Security.Cryptography;
-using System.Collections.Generic;
-using System;
+using System.Text;
 using Titulacion.Models;
 
 namespace Titulacion.Clases
@@ -16,14 +15,21 @@ namespace Titulacion.Clases
         {
             if (!string.IsNullOrEmpty(data))
             {
-                SHA256Managed sha = new SHA256Managed();
-                byte[] dataSinCifrar = Encoding.Default.GetBytes(data);
-                byte[] dataCifrada = sha.ComputeHash(dataSinCifrar);
-                return BitConverter.ToString(dataCifrada).Replace("-", "");
+                // --- CAMBIO APLICADO AQUÍ ---
+                // Se reemplaza el obsoleto 'new SHA256Managed()' por el método moderno 'SHA256.Create()'.
+                // El 'using' asegura que los recursos se liberen correctamente.
+                using (SHA256 sha = SHA256.Create())
+                {
+                    byte[] dataSinCifrar = Encoding.Default.GetBytes(data);
+                    byte[] dataCifrada = sha.ComputeHash(dataSinCifrar);
+                    return BitConverter.ToString(dataCifrada).Replace("-", "");
+                }
             }
             return "";
         }
-        public static string Folio(Alumno alumno) {
+
+        public static string Folio(Alumno alumno)
+        {
             Random rd = new Random();
             string[] auxS = { alumno.Nombre, alumno.ApellidoPat, alumno.ApellidoMat };
             string folio = auxS[0].Substring(0, 2).ToUpper();
