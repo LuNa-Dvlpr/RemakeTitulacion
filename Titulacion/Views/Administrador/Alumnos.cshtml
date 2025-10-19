@@ -1,156 +1,45 @@
-﻿@{
-    ViewData["Title"] = "Alumnos";
+﻿@model List<Titulacion.Models.Alumno>
+@{
+    ViewData["Title"] = "Administrar Alumnos";
     Layout = "~/Views/Shared/_LayaoutAdmin.cshtml";
 }
-  
-<h1>Alumnos</h1>
 
-<table id="myTable" class="table table-striped table-hover" >
-    <thead >
-        <tr class="thead-pantone">
-            <th>ID</th>
-            <th>Nombre</th>
+<h1>@ViewData["Title"]</h1>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Boleta</th>
+            <th>Nombre Completo</th>
             <th>Correo</th>
             <th>Grupo</th>
-            <th>Tutoria</th>            
-            <th>Editar</th>
-            <th>Eliminar</th>
+            <th>Tiene Tutoría</th>
+            <th>Acciones</th>
         </tr>
     </thead>
-    <tbody >
-        @foreach (var item in Model)
+    <tbody>
+        @foreach (var alumno in Model)
         {
             <tr>
+                <td>@(alumno.IdUsuarioNavigation?.User ?? "N/A")</td>
+                <td>@($"{alumno.Nombre} {alumno.ApellidoPat} {alumno.ApellidoMat}")</td>
+                <td>@alumno.Correo</td>
+                <td>@alumno.Grupo</td>
+                <td>@(alumno.Tutoria ? "Sí" : "No")</td>
                 <td>
-                    @item.IdAlumno
-                </td>
-                <td>
-                    @item.ApellidoPat @item.ApellidoMat @item.Nombre
-                </td>
-                <td>
-                    @item.Correo
-                </td>
-                <td>
-                    @item.Grupo
-                </td>
-                <td>
-                    @if (@item.Tutoria)
-                    {
-                       <i class="bi bi-check-lg"></i>
-                    }
-                    else
-                    {
-                       <i class="bi bi-x-lg"></i>
-                    }
-                </td>
-                <td>
-                    <button 
-                    type="button" 
-                    class="btn btn-primary" 
-                    data-bs-toggle="modal" 
-                    data-bs-target="#Editar" 
-                    onclick="Modificar(@item.IdAlumno,
-                                      '@item.Nombre',
-                                      '@item.ApellidoPat',
-                                      '@item.ApellidoMat',
-                                      '@item.Correo',
-                                      '@item.Grupo')"
-                    
-                    >
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                </td>
-                <td>
-                    <button type="button" class="btn btn-danger" onclick="ModalEliminar(@item.IdAlumno)">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                    <form asp-action="EliminarAlumno" asp-controller="Administrador" method="post" onsubmit="return confirm('¿Estás seguro de que deseas eliminar a este alumno? Esto también eliminará su inscripción.');">
+                        <input type="hidden" name="idAlumno" value="@alumno.IdAlumno" />
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </form>
                 </td>
             </tr>
         }
     </tbody>
 </table>
-
-
-<!-- Modal Editar -->
-<div class="modal fade" id="Editar" tabindex="-1" aria-labelledby="Editar" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="Editarlabel">Editar infromacion del alumno</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" ></button>
-      </div>
-        <div class="modal-body">
-            <form asp-action="Alumnos" asp-controller="Administrador" method="post" id="frmEditar">
-                <div class="form-group">
-                    <label for="idAlumno">Id del Alumno: </label>
-                    <input type="text" id="txtidAlumnoM" name="idAlumno" class="form-control" readonly />
-                </div>
-                <div class="form-group">                
-                    <label for="Nombre">Nombre: </label>
-                    <input type="text" id="txtNombre" name="Nombre" class="form-control "style="text-transform:uppercase;"/>
-                </div>
-                <div class="form-group">
-                    <label for="ApellidoPat">Apellido Paterno: </label>
-                    <input type="text" id="txtApellidoPat" name="ApellidoPat" class="form-control" style="text-transform:uppercase;"/>
-                </div>
-                    <div class="form-group">
-                    <label for="ApellidoMat">Apellido Materno: </label>
-                <input type="text" id="txtApellidoMat" name="ApellidoMat" class="form-control" style="text-transform:uppercase;"/>
-                </div>
-                <div class="form-group">
-                    <label for="Correo">Correo: </label>
-                    <input type="text" id="txtCorreo" name="Correo" class="form-control"/>
-                </div>
-                <div class="form-group">
-                    <label for="Grupo">Grupo: </label>
-                    <input type="text" id="txtGrupo" name="Grupo" class="form-control" style="text-transform:uppercase;"/>
-                </div>
-            </form>
-          </div>
-        <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-        <button type="button" class="btn btn-primary" onclick="Completado()">Guardar Cambios</button>
-      </div>
-     
-    </div>
-  </div>
-</div>
-
-<form asp-action="EliminarAlumno" asp-controller="Administrador" method="post" id="frmEliminar">
-    <input type="hidden" value="" id="txtidAlumno" name="idAlumno"/>
-</form>
-
-<script>
-    function Modificar(idAlumnoM,Nombre,ApellidoPat,ApellidoMat,Correo,Grupo){        
-        document.getElementById("txtidAlumnoM").value = idAlumnoM;
-        document.getElementById("txtNombre").value = Nombre;
-        document.getElementById("txtApellidoPat").value = ApellidoPat;
-        document.getElementById("txtApellidoMat").value = ApellidoMat;
-        document.getElementById("txtCorreo").value = Correo;
-        document.getElementById("txtGrupo").value = Grupo;
-    }
-    function Completado(){
-        document.getElementById("frmEditar").submit();        
-        swal("Good job!", "You clicked the button!", "success");
-    }
-    function ModalEliminar(IdAlumno){
-        swal({
-          title: "¿Estas Seguro?",
-          text: "Una vez eliminado se necesitara registrar de nuevo el usuario",
-          icon: "warning",
-          buttons: true,
-          dangerMode: true,
-        })
-        .then((willDelete) => {
-          if (willDelete) {
-              document.getElementById("txtidAlumno").value = IdAlumno;
-              document.getElementById("frmEliminar").submit();
-            swal("Poof! El registro ha sido elimimado", {
-              icon: "success",
-            });
-          } else {
-            swal("El registro se ha salvado :3");
-          }
-        });
-    }
-</script>
