@@ -34,3 +34,15 @@ VALUES
 ((SELECT Id_Usuario FROM Usuarios WHERE [User] = 'sofiaflore'), 'Sofia', 'Flores', 'Diaz', 'sofia.flores@email.com', '6IV11', 23, 8),
 ((SELECT Id_Usuario FROM Usuarios WHERE [User] = 'miguelcruz'), 'Miguel', 'Cruz', 'Santos', 'miguel.cruz@email.com', '6IV11', 20, 7);
 GO
+
+
+-- 1. Rompemos la dependencia de la inscripción (el paso que faltaba)
+DELETE FROM Inscripcion;
+-- 1. Borra los registros de la tabla 'Profesor'
+DELETE FROM Profesor;
+
+-- 2. Borra los registros de la tabla 'Usuarios' que son de tipo Profesor (TIPO = 1)
+DELETE FROM Usuarios WHERE TIPO = 1;
+GO
+
+DELETE FROM Alumno;

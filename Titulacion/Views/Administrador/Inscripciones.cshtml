@@ -1,42 +1,28 @@
-﻿@{
-    ViewData["Title"] = "Inscripciones";
+﻿@model List<Titulacion.Models.Inscripcion>
+@{
+    ViewData["Title"] = "Ver Inscripciones";
     Layout = "~/Views/Shared/_LayaoutAdmin.cshtml";
 }
 
-<h1>Inscripciones</h1>
-<table id="myTable" class="table table-striped table-hover">
-    <thead >
-        <tr class="thead-pantone">
-            <th>
-                Profesores
-            </th>
-            <th>
-                Alumnos
-            </th>
-            <th>
-                Fecha
-            </th>
-            <th>
-                Folio
-            </th>
+<h1>@ViewData["Title"]</h1>
+
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Folio</th>
+            <th>Alumno</th>
+            <th>Profesor</th>
+            <th>Fecha de Inscripción</th>
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var inscripcion in Model)
         {
             <tr>
-                <td>
-                    @item.Profesor
-                </td>
-                <td>
-                    @item.Alumno
-                </td>
-                <td>
-                    @item.Fecha
-                </td>
-                <td>
-                    @item.Folio
-                </td>
+                <td>@inscripcion.Folio</td>
+                <td>@($"{inscripcion.IdAlumnoNavigation.Nombre} {inscripcion.IdAlumnoNavigation.ApellidoPat}")</td>
+                <td>@($"{inscripcion.IdProfesorNavigation.Nombre} {inscripcion.IdProfesorNavigation.ApellidoPat}")</td>
+                <td>@inscripcion.Fecha.ToShortDateString()</td>
             </tr>
         }
     </tbody>
