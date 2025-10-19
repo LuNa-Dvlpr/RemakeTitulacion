@@ -1,15 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Titulacion.Clases;
 using Titulacion.Models;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
-using System.Security.Claims;
 
 namespace Titulacion.Controllers
 {
@@ -87,7 +88,16 @@ namespace Titulacion.Controllers
         [HttpGet]
         public IActionResult Registro()
         {
-            // Simplemente creamos un modelo vacío y lo pasamos a la vista
+            // 1. Obtenemos la lista de grupos únicos desde la tabla de Profesores
+            var grupos = _context.Profesor
+                                 .Select(p => p.Grupo)
+                                 .Distinct()
+                                 .OrderBy(g => g)
+                                 .ToList();
+
+            // 2. Pasamos la lista a la vista a través del ViewBag
+            ViewBag.GruposDisponibles = new SelectList(grupos);
+
             var modelo = new RegistroAlumnoViewModel();
             return View(modelo);
         }

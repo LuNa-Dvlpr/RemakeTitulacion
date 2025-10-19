@@ -5,6 +5,7 @@ namespace Titulacion.Models
     public class RegistroAlumnoViewModel
     {
         [Required(ErrorMessage = "El número de boleta es obligatorio.")]
+        [StringLength(10, ErrorMessage = "La boleta debe tener exactamente 10 caracteres.", MinimumLength = 10)]
         public string Boleta { get; set; }
 
         [Required(ErrorMessage = "El nombre es obligatorio.")]

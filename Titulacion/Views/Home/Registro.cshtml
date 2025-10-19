@@ -1,68 +1,90 @@
 ﻿@model Titulacion.Models.RegistroAlumnoViewModel
-
 @{
-    ViewData["Title"] = "Registro";
+    // 1. Le decimos a la vista que use la plantilla principal
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Registro de Alumno";
 }
 
-<h1>Registro</h1>
+<style>
+    body {
+        background-image: url(/img/Fondo.png);
+        background-size: cover;
+        backdrop-filter: blur(2px);
+    }
 
-<h4>RegistroAlumnoViewModel</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Registro">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Boleta" class="control-label"></label>
-                <input asp-for="Boleta" class="form-control" />
-                <span asp-validation-for="Boleta" class="text-danger"></span>
+    .container {
+        opacity: 0.95;
+    }
+</style>
+
+<div class="row d-flex justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-2-strong" style="border-radius: 1rem;">
+            <div class="card-body p-5">
+                <h3 class="card-title text-center mb-4">Crear una cuenta</h3>
+                <form asp-action="Registro" method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Boleta" class="form-control" placeholder="Boleta" maxlength="10" required/>
+                                <label asp-for="Boleta"></label>
+                                <span asp-validation-for="Boleta" class="text-danger"></span>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input asp-for="Nombre" class="form-control" placeholder="Nombre" required />
+                                <label asp-for="Nombre"></label>
+                                <span asp-validation-for="Nombre" class="text-danger"></span>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input asp-for="ApellidoPat" class="form-control" placeholder="Apellido Paterno" required/>
+                                <label asp-for="ApellidoPat">Apellido Paterno</label>
+                                <span asp-validation-for="ApellidoPat" class="text-danger"></span>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input asp-for="ApellidoMat" class="form-control" placeholder="Apellido Materno" required />
+                                <label asp-for="ApellidoMat">Apellido Materno</label>
+                                <span asp-validation-for="ApellidoMat" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Correo" class="form-control" placeholder="Correo" required />
+                                <label asp-for="Correo"></label>
+                                <span asp-validation-for="Correo" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <select asp-for="Grupo" class="form-select" required asp-items="ViewBag.GruposDisponibles">
+                                    <option value="">-- Selecciona un grupo --</option>
+                                </select>
+                                <label asp-for="Grupo"></label>
+                                <span asp-validation-for="Grupo" class="text-danger"></span>
+                            </div>
+
+                            <div class="form-floating mb-3">
+                                <input asp-for="Pass" type="password" class="form-control" placeholder="Contraseña" required />
+                                <label asp-for="Pass">Contraseña</label>
+                                <span asp-validation-for="Pass" class="text-danger"></span>
+                            </div>
+                            <div class="form-floating mb-3">
+                                <input asp-for="ConfirmarPass" type="password" class="form-control" placeholder="Confirmar Contraseña" required/>
+                                <label asp-for="ConfirmarPass">Confirmar Contraseña</label>
+                                <span asp-validation-for="ConfirmarPass" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-grid mt-3">
+                        <button type="submit" class="btn btn-primary btn-lg">Registrarse</button>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <label asp-for="Nombre" class="control-label"></label>
-                <input asp-for="Nombre" class="form-control" />
-                <span asp-validation-for="Nombre" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ApellidoPat" class="control-label"></label>
-                <input asp-for="ApellidoPat" class="form-control" />
-                <span asp-validation-for="ApellidoPat" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ApellidoMat" class="control-label"></label>
-                <input asp-for="ApellidoMat" class="form-control" />
-                <span asp-validation-for="ApellidoMat" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Correo" class="control-label"></label>
-                <input asp-for="Correo" class="form-control" />
-                <span asp-validation-for="Correo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Grupo" class="control-label"></label>
-                <input asp-for="Grupo" class="form-control" />
-                <span asp-validation-for="Grupo" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Pass" class="control-label"></label>
-                <input asp-for="Pass" class="form-control" />
-                <span asp-validation-for="Pass" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ConfirmarPass" class="control-label"></label>
-                <input asp-for="ConfirmarPass" class="form-control" />
-                <span asp-validation-for="ConfirmarPass" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
