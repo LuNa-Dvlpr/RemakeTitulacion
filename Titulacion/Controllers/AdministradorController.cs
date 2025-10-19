@@ -26,7 +26,35 @@ namespace Titulacion.Controllers
             return View(listaAlumnos);
         }
 
-        // ... (Tu método EliminarAlumno se queda igual) ...
+        [HttpPost]
+        public async Task<IActionResult> EliminarAlumno(int idAlumno)
+        {
+            // Buscamos el registro del alumno que se va a eliminar
+            var alumnoAEliminar = await _context.Alumno.FindAsync(idAlumno);
+
+            if (alumnoAEliminar != null)
+            {
+                // Buscamos el usuario asociado para también eliminarlo
+                var usuarioAEliminar = await _context.Usuarios.FindAsync(alumnoAEliminar.IdUsuario);
+
+                // Borramos inscripciones primero para evitar conflictos de dependencia
+                var inscripciones = _context.Inscripcion.Where(i => i.IdAlumno == idAlumno);
+                _context.Inscripcion.RemoveRange(inscripciones);
+
+                _context.Alumno.Remove(alumnoAEliminar);
+                if (usuarioAEliminar != null)
+                {
+                    _context.Usuarios.Remove(usuarioAEliminar);
+                }
+
+                await _context.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Alumno eliminado con éxito.";
+            }
+
+            return RedirectToAction("Alumnos");
+        }
+
+        
 
         // --- GESTIÓN DE PROFESORES (CORREGIDO Y COMPLETO) ---
         [HttpGet]
